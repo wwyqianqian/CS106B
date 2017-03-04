@@ -1,166 +1,110 @@
 // This is the CPP file you will edit and turn in.
 // Also remove these comments here and add your own.
-// TODO : remove this comment header
+// TODO: remove this comment header
+
+#include <fstream>
+#include <iostream>
+#include <string>
+#include "simpio.h"
+#include "console.h"
+#include "random.h"
+#include "strlib.h"
+#include "vector.h"
+#include "map.h"
+using namespace std;
 
 
-  #include <cctype>
-	#include <cmath>
-	#include <fstream>
-	#include <iostream>
-	#include <string>
-	#include "console.h"
-	#include "strlib.h"
-	#include "stack.h"
-	#include "lexicon.h"
-	#include "simpio.h"
-	#include "queue.h"
-	#include "filelib.h"
-	#include "set.h"
+//Function Prototype
+void fileScanner(ifstream &infile,int order);
+void fileWriter(int order);
+string findSeed(void);
+
+//Named Constant
+const int REQUIRED_WORDS =2000;
+
+//Global Variable
+Map<string, Vector<char> > writterDatabase;
 
 
-	using namespace std;
+int main() {
+    ifstream infile;
+    while(true){
+        string fileName = getLine("Please enter filename containing source text: ");
+        infile.open(fileName.c_str());
+        //in order to obtain the correct file name
+        if (!infile.fail()) break;
+        infile.clear();
+        cout<<"Unable to open the file. Please try again! "<<endl;
+    }
+    int order = getInteger("What order of analysis (1 to 10)");
+    fileScanner(infile,order);
+    fileWriter(order);
+	return 0;
+}
+/*
+ Function Name: fileScanner
+ Usage: void fileWriter(ifstream in,int order)
+ this method is firstly achieving read all txt file into a char stream. Then, according to the order entered, the keyword of map will be listed. the following char of each keyword will be added to the vector.
+ */
 
-
-	void runWordLadder();
-	string getWord();
-	Lexicon openDictionary();
-	bool wordsAreValid(string w1, string w2, Lexicon &dic);
-	void returnSolution(Stack<string> &solution, string w1, string w2);
-	void findShortestWordLadder(string w1, string w2, Lexicon &dic);
-
-
-	int main() {
-	    cout << "Welcome to Word Ladder." << endl;
-	    runWordLadder();
-	    cout << "Have a nice day." << endl;
-	    return 0;
-	}
-
-
-	// Runs Word Ladder program
-	void runWordLadder() {
-	    cout << "Please give me two English words, and I will change the first into the second by changing one letter at a time." << endl;
-	    Lexicon dictionary = openDictionary(); // Initializes a new lexicon containing words from a dictionary txt file
-	    while (true) {
-	        string word1 = getWord();
-	        if (word1 == "") { // If empty string is entered, quits program.
-	            return;
-	        }
-	        string word2 = getWord();
-	        if (word2 == "") { // If empty string is entered, quits program.
-	            return;
-	        }
-	        if (wordsAreValid(word1, word2, dictionary)) {
-	            findShortestWordLadder(word1, word2, dictionary);
-	        }
-	    }
-	}
-
-
-	// Opens dictionary file, if valid. Stores contents in Lexicon data structure.
-	Lexicon openDictionary() {
-	    ifstream input;
-	    Lexicon lex;
-	    while (true) {
-	        string filename = getLine("Dictionary file name? ");
-	        openFile(input, filename);
-	        if (input.is_open()) {
-	            lex.addWordsFromFile(filename); // reads in the contents from the data file. Must be text file containing 1 word per line.
-	            break;
-	        } else {
-	            cout << "File does not exist. Try again." << endl;
-	        }
-	    }
-
-	    return lex;
-	}
-
-
-	// Asks user to input a word. Returns string in lower case.
-	string getWord() {
-	    string w1 = getLine("Word #1 (or Enter to quit): ");
-	    return toLowerCase(w1);
-	}
-
-
-	// Returns true if the two words are valid
-	bool wordsAreValid(string w1, string w2, Lexicon &dic) {
-	    if (w1 == w2) {
-	        cout << "The two words must be different." << endl;
-	        return false;
-	    }
-	    if (!dic.contains(w1) || !dic.contains(w2)) {
-	        cout << "The two words must be found in the dictionary." << endl;
-	        return false;
-	    }
-	    if (w1.length() != w2.length()) {
-	        cout << "The two words must be the same length." << endl;
-	        return false;
-	    }
-	    return true;
-	}
-
-
-	// Find the shortest word ladder between strings w1 and w2
-	void findShortestWordLadder(string w1, string w2, Lexicon &dic) {
-
-
-	    Queue<Stack<string> > wordLadders; // Create an empty queue of stacks
-
-
-	    Stack<string> start; // Create and add a stack containing w1 to the queue
-	    start.push(w1);
-	    wordLadders.enqueue(start);
-
-	    Set<string> usedWords; // Keeps track of used words so that they are not re-used in mult ladders
-	    usedWords.add(w1);
-
-	    while (!wordLadders.isEmpty()) {
-
-
-	        Stack<string> partialLadder = wordLadders.dequeue(); // Dequeue the partial-ladder stack from the front of the queue
-
-
-	        string topWord = partialLadder.peek(); // Retrieve the word on top of the stack
-
-
-
-	        for (int i = 0; i < topWord.length(); i++) { // Iterate through each letter of the word
-
-
-	            string alphabet = "abcdefghijklmnopqrstuvwxyz";
-
-
-	            string copyTWord = topWord; // Create copy of the top word to manipulate
-
-
-	            for (int j = 0; j < alphabet.length(); j++) { // Iterate through alphabet
-
-	                if (topWord[i] != alphabet[j]) {
-	                    copyTWord[i] = alphabet[j]; // if the letter varies from original letter, replace it;
-
-	                    if (copyTWord == w2) { // If we found the solution, print out the stack and return to main
-	                        partialLadder.push(copyTWord);
-	                        returnSolution(partialLadder, w1, w2);
-	                        usedWords.clear();
-	                        return;
-	                    }
-	                    if (dic.contains(copyTWord) && !usedWords.contains(copyTWord)) { // If modified string is valid and not used before...
-	                        Stack<string> copyStack = partialLadder; // Create a copy of partialLadder
-	                        copyStack.push(copyTWord); // Add copyTWord to partialLadder
-	                        wordLadders.enqueue(copyStack); // Add partialLadder to queue
-	                        usedWords.add(copyTWord);
-	                    }
-	                }
-	            }
-	        }
-	    }
-	    cout << "There is no word ladder between these two words. Sorry!" << endl;
-	}
-
-	void returnSolution(Stack<string> &solution, string w1, string w2) {
-	    cout << "A ladder from " << w2 << " back to " << w1 << ":" << endl;
-	    while (!solution.isEmpty()) {
-	        cout << solution.pop() << " ";
-	    }
-	    cout << "\n" << endl;
+void fileScanner(ifstream &infile,int order){
+    Vector<string> key;
+    Vector<char> keyStream;
+    //eof: end of file
+    while(!infile.eof()){
+        keyStream.add(infile.get());
+    }
+    for (int i =0; i<keyStream.size()-order; i++) {
+        string singleKey = "";
+        for(int j=0;j<order;j++){
+            singleKey+=string(1,keyStream.get(i+j));
+        }
+        if(!writterDatabase.containsKey(singleKey)){
+            Vector<char> possibleChoices;
+            possibleChoices.add(keyStream.get(i+order));
+            writterDatabase.put(singleKey,possibleChoices);
+        }else{
+            Vector<char> possibleChoices;
+            possibleChoices= writterDatabase.get(singleKey);
+            possibleChoices.add(keyStream.get(i+order));
+            writterDatabase.put(singleKey,possibleChoices);
+        }
+    }
+}
+/*
+ Function Name: fileWriter
+ Usage: void fileWriter(int)
+ the mostly appeared keyword will be treated as seed and the next char will be selected from the vector related to keyword. then this char will combined with the previous seed except the first char to form a new seed. Until reach 2000 char, it won't finish.
+ */
+void fileWriter(int order){
+    cout<<"Analyzing, please wait."<<endl;
+    string seed = findSeed();
+    string article = "";
+    article+=seed;
+    for(int i=0;i<REQUIRED_WORDS-order;i++){
+        Vector<char> follower = writterDatabase.get(seed);
+        //randomly choose one from all the followers
+        int randomIndex =randomInteger(0, follower.size()-1);
+        char nextChar = follower[randomIndex];
+        seed=seed.substr(1)+string(1,nextChar);
+        article+=string(1,nextChar);
+    }
+    cout<<article<<endl;
+}
+/*
+ Fuction Name: findSeed
+ usage: string str = findSeed
+ this is simply a normal find maximum problem. the only useful poing is using foreach method to iterate within a map.
+ */
+string findSeed(){
+    int maxFollower = 0;
+    string seed = "";
+    //awesome foreach method
+    foreach(string key in writterDatabase){
+        if(writterDatabase.get(key).size()>maxFollower){
+            maxFollower=writterDatabase.get(key).size();
+            seed = key;
+        }
+    }
+    return seed;
+}
