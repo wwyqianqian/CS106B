@@ -99,10 +99,29 @@ int fillColor(GBufferedImage& image, int x, int y, int newColor, int oldColor) {
 
 
 //Milestone 4: Personalized Curriculum
-//第四题，找出他所包含的，直到打印出自己。
-void personalCurriculum(Map<string, Vector<string>> & prereqMap,string goal) {
-    // your code here
-    cout << "[recursion personal curriculum called]" << endl;
+//第四题，找出他所包含的私有课程，直到打印出自己personalCurriculum。
+void personalCurriculum(Map<string, Vector<string>> & prereqMap,string goal){
+
+    Set <string> alreadymentioned;
+    alreadymentioned.add(goal);
+    betterCurriculum(prereqMap, goal, alreadymentioned);
+    cout << goal << endl;
+
+}
+void betterCurriculum(Map<string, Vector<string>> & prereqMap, string goal, Set<string> & alreadymentioned){
+
+    if (prereqMap.get(goal).isEmpty()){
+        return;
+    }
+    else{
+       for (string classname: prereqMap.get( goal )){
+           betterCurriculum(prereqMap , classname , alreadymentioned);
+           if(!alreadymentioned.contains( classname )){
+              cout << classname << endl;
+            }
+           alreadymentioned.add(classname);
+       }
+    }
 }
 
 
