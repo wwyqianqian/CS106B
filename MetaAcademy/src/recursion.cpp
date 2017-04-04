@@ -132,18 +132,18 @@ void personalCurriculum(Map<string, Vector<string>> & prereqMap,string goal){
 
 
 //Milestone 5: Generate Question
-//第五题，组个句子？？？（（不是很懂
+//第五题，组个句子
 string generateHelper(Map<string, Vector<string> > & grammar, string symbol, string result){
-    if(! grammar.containsKey (symbol)){
+    if(!grammar.containsKey(symbol)){
         return symbol;
      }
     else{
         //randomly pick a string within the vector and use TokenScanner to seperate the objects within it.
-       string randomString = grammar.get(symbol).get(randomInteger(0, grammar.get(symbol).size() -1 ));
+       string randomString = grammar.get(symbol).get(randomInteger(0, grammar.get(symbol).size() - 1));
        TokenScanner scanner(randomString);
        while(scanner.hasMoreTokens()){
           string token = scanner.nextToken();
-          result += generate(grammar , token);
+          result += generate(grammar, token);
       }
     }
     return result;
@@ -151,6 +151,6 @@ string generateHelper(Map<string, Vector<string> > & grammar, string symbol, str
 
 string generate(Map<string, Vector<string> > & grammar, string symbol)
 {
-   string out = "";
-   return generateHelper ( grammar , symbol , out );
+   string out = " ";
+   return generateHelper (grammar , symbol , out);
 }
